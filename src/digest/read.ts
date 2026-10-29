@@ -80,3 +80,21 @@ export const readNight: ReadNight = (runsDir, night) => {
   }
   return digest(night, text);
 };
+
+export type NightCounts = { ok: number; retry: number; fail: number };
+
+// Lines per status across the night's parsed lines; unparsable lines are skipped.
+export function countNight(runsDir: string, night: string): NightCounts {
+  const counts: NightCounts = { ok: 0, retry: 0, fail: 0 };
+  let text: string;
+  try {
+    text = readFileSync(join(runsDir, `${night}.jsonl`), 'utf8');
+  } catch {
+    return counts;
+  }
+  for (const raw of text.split('\n')) {
+    const line = parseLine(raw);
+    if (line) counts[line.status]++;
+  }
+  return counts;
+}
