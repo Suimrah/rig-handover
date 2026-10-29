@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { readNight } from './digest/read.js';
 import { loadConfig, type RigConfig } from './config.js';
+import { readNight } from './digest/read.js';
 import { lane } from './lane.js';
 import { readStatus } from './status.js';
 import { DigestPage, NightMissing } from './views/digest.js';
@@ -36,6 +36,12 @@ export function createApp(config: RigConfig = loadConfig()) {
         <DigestPage night={night} />
       </Layout>,
     );
+  });
+
+  app.get('/api/digest/:night', (c) => {
+    const night = c.req.param('night');
+    const data = readNight(config.runsDir, night);
+    return data ? c.json(data) : c.json({ error: 'no such night', night }, 404);
   });
 
   return app;
